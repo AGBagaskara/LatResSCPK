@@ -143,10 +143,10 @@ match pilihan:
         
         # Matriks Perbandingan Bobot Kriteria
         MPBK = np.array([
-            [bobot_harga/bobot_harga , bobot_baterai/bobot_harga, bobot_ram/bobot_harga, bobot_kamera/bobot_harga],
-            [bobot_harga/bobot_baterai, bobot_baterai/bobot_baterai, bobot_ram/bobot_baterai, bobot_kamera/bobot_baterai],
-            [bobot_harga/bobot_ram, bobot_baterai/bobot_ram, bobot_ram/bobot_ram, bobot_kamera/bobot_ram],
-            [bobot_harga/bobot_kamera, bobot_baterai/bobot_kamera, bobot_ram/bobot_kamera, bobot_kamera/bobot_kamera]
+            [bobot_harga/bobot_harga, bobot_harga/bobot_baterai, bobot_harga/bobot_ram, bobot_harga/bobot_kamera],
+            [bobot_baterai/bobot_harga, bobot_baterai/bobot_baterai, bobot_baterai/bobot_ram, bobot_baterai/bobot_kamera],
+            [bobot_ram/bobot_harga, bobot_ram/bobot_baterai, bobot_ram/bobot_ram, bobot_ram/bobot_kamera],
+            [bobot_kamera/bobot_harga, bobot_kamera/bobot_baterai, bobot_kamera/bobot_ram, bobot_kamera/bobot_kamera]
         ])
 
         # Tampil Tabel perbandingan Kriteria
@@ -250,7 +250,7 @@ match pilihan:
 # HALAMAN 3: METODE WP
 # ==========================================
     case "Page 3 - WP":
-        st.header("Penyelesaian dengan Metode Weighted Product (WP)")
+        st.header("Penyelesaian dengan Metode WP")
         
         st.subheader("4.1 Bobot Kriteria (W)")
         # Menampilkan bobot yang sudah dinormalisasi dari sidebar
