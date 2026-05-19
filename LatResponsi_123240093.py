@@ -83,6 +83,10 @@ data = {
 }
 df = pd.DataFrame(data)
 
+data_wp = np.array([
+    harga, baterai, ram, kamera
+]).T
+
 # --- 3. SIDEBAR (PENGATURAN BOBOT) ---
 st.sidebar.title("⚙️ Pengaturan")
 pilihan = st.sidebar.selectbox("Pilih Halaman : ",
@@ -95,7 +99,9 @@ bobot_ram = st.sidebar.slider("RAM (GB)", min_value=1.0, max_value=5.0, value=3.
 bobot_kamera = st.sidebar.slider("Kamera (MP)", min_value=1.0, max_value=5.0, value=2.5, step=0.1)
 
 # Menghitung bobot ternormalisasi
-total_bobot = bobot_harga + bobot_baterai + bobot_ram + bobot_kamera
+bobot = np.array([-bobot_harga, bobot_baterai, bobot_ram, bobot_kamera])
+total_bobot = np.sum(bobot)
+bobot = bobot / np.sum(np.abs(bobot))
 w_harga = bobot_harga / total_bobot
 w_baterai = bobot_baterai / total_bobot
 w_ram = bobot_ram / total_bobot
@@ -262,9 +268,21 @@ match pilihan:
         st.dataframe(df_bobot_wp, use_container_width=True, hide_index=True)
 
         st.subheader("4.2 Vektor S")
+        
         # TODO: Tulis logika matematika WP untuk Vektor S di sini
         # Ingat: Kriteria Cost pangkatnya negatif (-w_harga), Benefit pangkatnya positif (+w_baterai)
-        st.info("Area untuk tabel perhitungan Vektor S")
+
+        S = np.prod(np.power(data_wp, bobot), axis=1)
+
+        # Menghitung vector V
+        V = S / np.sum(S)
+
+        df_vektor_s = pd.DataFrame({
+            "Smartphone": smartphone,
+            "Vector S": V
+        })
+        st.latex(r"S_i = \prod_{j=1}^{n} X_{ij}^{w_j}")
+        st.dataframe(df_vektor_s, use_container_width=True, hide_index=True)
 
         st.subheader("4.3 Vektor V dan Ranking Akhir")
         # TODO: Tulis logika Vektor V (Nilai S alternatif dibagi Total nilai S), lalu urutkan rankingnya
