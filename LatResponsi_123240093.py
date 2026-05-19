@@ -93,10 +93,10 @@ pilihan = st.sidebar.selectbox("Pilih Halaman : ",
                                ("Page 1 - Data Alternatif", "Page 2 - AHP", "Page 3 - WP"))
 
 # Menggunakan slider untuk input bobot (kamu bisa sesuaikan min, max, dan default valuenya)
-bobot_harga = st.sidebar.slider("Harga (Juta Rp)", min_value=1.0, max_value=5.0, value=2.0, step=0.1)
-bobot_baterai = st.sidebar.slider("Baterai (mAh)", min_value=1.0, max_value=5.0, value=2.5, step=0.1)
-bobot_ram = st.sidebar.slider("RAM (GB)", min_value=1.0, max_value=5.0, value=3.0, step=0.1)
-bobot_kamera = st.sidebar.slider("Kamera (MP)", min_value=1.0, max_value=5.0, value=2.5, step=0.1)
+bobot_harga = st.sidebar.slider("Harga (Juta Rp)", min_value=0.0, max_value=1.0, value=0.7, step=0.1)
+bobot_baterai = st.sidebar.slider("Baterai (mAh)", min_value=0.0, max_value=1.0, value=0.5, step=0.1)
+bobot_ram = st.sidebar.slider("RAM (GB)", min_value=0.0, max_value=1.0, value=0.2, step=0.1)
+bobot_kamera = st.sidebar.slider("Kamera (MP)", min_value=0.0, max_value=0.4, value=2.5, step=0.1)
 
 # Menghitung bobot ternormalisasi
 bobot = np.array([-bobot_harga, bobot_baterai, bobot_ram, bobot_kamera])
@@ -272,20 +272,57 @@ match pilihan:
         # TODO: Tulis logika matematika WP untuk Vektor S di sini
         # Ingat: Kriteria Cost pangkatnya negatif (-w_harga), Benefit pangkatnya positif (+w_baterai)
 
-        S = np.prod(np.power(data_wp, bobot), axis=1)
+        st.latex(r"S_i = \prod_{j=1}^{n} X_{ij}^{w_j}")
 
-        # Menghitung vector V
-        V = S / np.sum(S)
-
+        # Mengatur nilai pangkat: 
+        # Cost (Harga) dikalikan -1, Benefit (Baterai, RAM, Kamera) dikalikan 1
+        pangkat_w = np.array([-w_harga, w_baterai, w_ram, w_kamera])
+        
+        # Menghitung Vektor S untuk masing-masing alternatif
+        vektor_S = []
+        for i in range(len(smartphone)):
+            # Perhitungan mengalikan setiap nilai kriteria yang dipangkatkan dengan bobotnya
+            s_val = (
+                (harga[i] ** pangkat_w[0]) *
+                (baterai[i] ** pangkat_w[1]) *
+                (ram[i] ** pangkat_w[2]) *
+                (kamera[i] ** pangkat_w[3])
+            )
+            vektor_S.append(s_val)
+            
+        vektor_S = np.array(vektor_S)
+        
+        # Tampilkan Tabel Vektor S
         df_vektor_s = pd.DataFrame({
             "Smartphone": smartphone,
-            "Vector S": V
+            "Vektor S": vektor_S
         })
-        st.latex(r"S_i = \prod_{j=1}^{n} X_{ij}^{w_j}")
         st.dataframe(df_vektor_s, use_container_width=True, hide_index=True)
-
-        st.subheader("4.3 Vektor V dan Ranking Akhir")
-        # TODO: Tulis logika Vektor V (Nilai S alternatif dibagi Total nilai S), lalu urutkan rankingnya
-        st.info("Area untuk tabel hasil Vektor V dan Ranking")
         
-        st.success("🏆 **Kesimpulan Weighted Product (WP):**\n\nBerdasarkan metode WP, rekomendasi utama adalah ... dengan nilai ...")
+        # 3. Menghitung Vektor V (Skor Akhir & Ranking)
+        st.subheader("4.3 Nilai Akhir (Vektor V) dan Ranking")
+        st.latex(r"V_i = \frac{S_i}{\sum S}")
+        
+        # Rumus Vektor V: Vektor S dibagi Total Vektor S
+        vektor_V = vektor_S / np.sum(vektor_S)
+        
+        # Memasukkan ke DataFrame dan Mengurutkan Ranking
+        df_ranking_wp = pd.DataFrame({
+            "Smartphone": smartphone,
+            "Vektor V": vektor_V,
+        })
+        
+        # Sorting dari nilai V terbesar ke terkecil
+        df_ranking_wp = df_ranking_wp.sort_values(by="Vektor V", ascending=False).reset_index(drop=True)
+        
+        df_ranking_wp['Ranking'] = [1,2,3,4,5]
+        
+        
+        # Tampilkan tabel Vektor V dan Ranking
+        st.dataframe(df_ranking_wp, use_container_width=True, hide_index=True)
+        
+        # 4. Kesimpulan Otomatis WP
+        pemenang_wp = df_ranking_wp.iloc[0]["Smartphone"]
+        skor_wp = df_ranking_wp.iloc[0]["Vektor V"]
+        
+        st.success(f"🏆 **Kesimpulan Weighted Product (WP):**\n\nBerdasarkan metode WP, rekomendasi utama adalah {pemenang_wp} dengan nilai {skor_wp}")
